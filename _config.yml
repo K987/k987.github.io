@@ -59,7 +59,7 @@ plugins:
 author:
   name   : "Kálmán Kostenszky"
   #avatar : "/assets/images/bio-photo.jpg"
-  bio    : "My awesome biography constrained to a sentence or two goes here."
+  bio    : ""
   links:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
@@ -84,7 +84,7 @@ defaults:
       type: posts
     values:
       layout: single
-      author_profile: true
+      author_profile: false
       read_time: true
       comments: true
       share: true

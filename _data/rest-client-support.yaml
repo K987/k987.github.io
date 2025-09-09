@@ -1,0 +1,24 @@
+- name: MockMvc
+  library: Spring Web MVC
+  sut:
+    - Controller (called stanadlone mode)
+    - WebApplicationContext
+- name: WebTestClient
+  library: Spring WebFlux
+  sut:
+    - Controller
+    - (Web)ApplicationContext
+    - Server
+- name: RestAssured
+  library: External library
+  sut:
+    - Controller
+    - Server
+- name: TestRestTemplate
+  library: Spring Boot
+  sut:
+    - Server
+- name: MockWebServiceClient
+  library: Spring Web Services
+  sut:
+    - ApplicationContext
