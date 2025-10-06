@@ -1,6 +1,7 @@
 ---
 title: Testing Spring REST Webservices
 excerpt: Learn how to effectively test Spring REST APIs using RestAssured, OpenAPI, and Spring Boot, with a focus on integration and end-to-end testing.
+classes: wide
 ---
 
 # Overview
