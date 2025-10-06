@@ -45,7 +45,7 @@ Besides JSON and XML validation capabilities it also supports request serializat
 * **[TestRestTemplate][test-rest-template]**: is a simple test HTTP client utility class of Spring Boot. It acts exactly the same way as a `RestTemplate`, but does not throw exceptions on 4xx and 5xx responses.
 * **[RestAssured][rest-assured]**: is a standalone library specifically for REST API testing. It offers [integration][rest-assured-spring] with the Spring framework to enable standalone unit testing of individual controllers.
 It comes with an extensive test feature set: configurable serialization, schema support, authentication support, CSRF support, SSL support.
-* **[MockWebServiceClient][mock-web-service-client]: is a mock SOAP service client. It mocks the servlet container similarly to `MockMvc`.
+* **[MockWebServiceClient][mock-web-service-client]**: is a mock SOAP service client. It mocks the servlet container similarly to `MockMvc`.
 
 Depending on the use case we should likely choose between `RestAssured` or `WebTestClient`.
 `WebTestClient` supports async APIs and streaming responses, `RESTAssured` does not. 
