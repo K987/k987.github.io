@@ -30,6 +30,7 @@ In **Part I** of this blog series, I demonstrate how to set up integration testi
 * **System test** scenarios running against the full application context.
 
 In **Part II**, I’ll expand on production-ready features — such as retry logic and authorization — and examine how to effectively test them.
+Last but not least how testability impact the application design.
 
 ## Project Setup
 
@@ -395,7 +396,9 @@ The most straightforward way is to use the [Spring Boot Test integration][wire-m
 Spring Boot provides first-class support for [Testcontainers][spring-test-containers]. Here’s how to configure a test using WireMock with Testcontainers:
 
 ```java
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, 
+        useMainMethod = SpringBootTest.UseMainMethod.ALWAYS)
 @Testcontainers
 @ImportTestcontainers(TestContainerConfiguration.class)
 public class PetApiTest {
@@ -503,15 +506,28 @@ Here, we use it to configure the host of `PetWarehouseApiClient` with the WireMo
 
 In this tutorial, we explored two distinct approaches to setting up integration tests for external API calls:
 
-1. **Test Slices**:
-  * Allow you to isolate a module fragment from the entire application context.
-  * Simplify test configuration and provide **better control** over the test environment.
-  * Ideal for extensive testing** of the API client itself.
-2. **WireMock with Testcontainers**:
-  * Enable integration tests with **real network calls**, simulating external APIs.
-  * Perfect for **system tests** that exercise the entire application stack.
+1. Localized module test with Test Slices:
 
-Each approach has its strengths, and the choice depends on your testing goals. Use **test slices** for focused, modular testing and **WireMock with Testcontainers** for comprehensive, end-to-end validation.
+   * Allow you to isolate a module fragment from the entire application context.
+   * Simplify test configuration and provide better control over the test environment.
+   * Ideal for extensive testing of the API client itself.
+
+2. Full application integration test with WireMock and Testcontainers:
+
+   * Enable integration tests with real network calls, simulating external APIs.
+     * Perfect for system tests that exercise the entire application stack.
+
+While Testcontainers and WireMock might initially seem like overkill, they bring significant advantages that aren’t immediately obvious:
+
+* **Testcontainers**:
+    * Provide a reusable abstraction for a wide range of external services.
+    * Enable portable setups across different environments, making your tests more consistent and adaptable.
+
+* **WireMock**:
+  * Supports dynamic behavior beyond simple stubbing. 
+  * Can proxy real server instances, allowing for more realistic and flexible testing scenarios.
+
+Each approach has its strengths, and the choice depends on your testing goals. Use test slices for focused, modular testing and WireMock with Testcontainers for comprehensive, end-to-end validation.
 
 The full example is available on my [GitHub][git-hub-example].
 
