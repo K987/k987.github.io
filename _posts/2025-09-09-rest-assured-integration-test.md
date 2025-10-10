@@ -141,6 +141,10 @@ subprojects {
 		}
 	  }
     }
+    
+    //include implementation dependencies into integrationTestImplementation configuration
+	configurations["integrationTestImplementation"].extendsFrom(configurations.implementation)
+    
 	tasks.named('check') {
 	  dependsOn 'integrationTest'
 	}
