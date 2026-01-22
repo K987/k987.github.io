@@ -18,6 +18,12 @@
   library: Spring Boot
   sut:
     - Server
+- name: RestTestClient
+  library: Spring Framework
+  sut:
+    - Controller
+    - (Web)ApplicationContext
+    - Server
 - name: MockWebServiceClient
   library: Spring Web Services
   sut:

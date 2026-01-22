@@ -2,8 +2,11 @@
 title: Spring Boot REST Client Integration Testing - part I
 excerpt: Learn how to test and configure Spring Boot integration tests with external webservice dependencies
 classes: wide
-
+last_modified_at: 2026-02-05T10:00:00-05:00
 ---
+
+The article has been updated to reflect changes in Spring Boot 4 on __2026.02.05__.
+{: .notice--warning}
 
 # Overview
 
@@ -241,7 +244,7 @@ Here’s how a scoped integration test looks:
         PetWarehouseRepository.class,
         PetWarehouseApiClient.class
 })
-public class PetWarehouseApiClientTest {
+class PetWarehouseApiClientTest {
 
     @Autowired
     ObjectMapper objectMapper;
@@ -253,7 +256,7 @@ public class PetWarehouseApiClientTest {
     PetWarehouseApiClient warehouseApiClient;
 
     @Test
-    void whenFetchingExistingPet_ThenResponseResolved() throws JsonProcessingException {
+    void whenFetchingExistingPet_ThenResponseResolved() {
         long petId = 1234L;
         String petName = "testName";
         String petStatus = "ON_STOCK";
@@ -400,48 +403,43 @@ Spring Boot provides first-class support for [Testcontainers][spring-test-contai
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, 
         useMainMethod = SpringBootTest.UseMainMethod.ALWAYS)
 @Testcontainers
+@AutoConfigureRestTestClient
 @ImportTestcontainers(TestContainerConfiguration.class)
 public class PetApiTest {
 
     @Autowired
-    TestRestTemplate testRestTemplate;
+    RestTestClient restTestClient;
 
     @Test
     void whenFetchingExistingPet_ThenResponseResolved() {
-        RequestEntity<?> request = RequestEntity
-                .get(URI.create("/v1/pet/12345"))
-                .accept(MediaType.APPLICATION_JSON)
-                .build();
-        ResponseEntity<Map<String, Object>> response = testRestTemplate.exchange(
-                request,
-                new ParameterizedTypeReference<>() {});
-
-        assertAll(
-                () -> assertThat(response.getStatusCode().value()).isEqualTo(200),
-                () -> assertThat(response.getBody()).isNotNull(),
-                () -> assertThat(response.getBody().size()).isEqualTo(6),
-                () -> assertThat(response.getBody().get("id")).isEqualTo(12345),
-                () -> assertThat(response.getBody().get("name")).isEqualTo("dog"),
-                () -> assertThat(response.getBody().get("status")).isEqualTo("pending"),
-                () -> assertThat(response.getBody().get("category")).isEqualTo(null),
-                () -> assertThat(response.getBody().get("tags")).isInstanceOfSatisfying(
-                        List.class,
-                        list -> assertThat(list.size()).isEqualTo(2)
-                ),
-                () -> assertThat(response.getBody().get("photoUrls")).isEqualTo(
-                        List.of(
-                                "http://my.cdm.com/pet/12345/1",
-                                "http://my.cdm.com/pet/12345/2",
-                                "http://my.cdm.com/pet/12345/3"
-                        )
+        restTestClient
+            .get().uri("/v1/pet/12345")
+            //.accept(MediaType.APPLICATION_JSON)
+            .exchangeSuccessfully()
+            .expectBody(PetDto.class)
+            .value(petDto -> assertAll(
+                () -> assertThat(petDto.getId()).isEqualTo(12345L),
+                () -> assertThat(petDto.getName()).isEqualTo("dog"),
+                () -> assertThat(petDto.getStatus()).isEqualTo(PetDto.StatusEnum.PENDING),
+                () -> assertThat(petDto.getCategory()).isNull(),
+                () -> assertThat(petDto.getTags()).hasSize(2),
+                () -> assertThat(petDto.getTags()).anyMatch(tagDto -> "tag-1".equals(tagDto.getName())),
+                () -> assertThat(petDto.getTags()).anyMatch(tagDto -> "tag-2".equals(tagDto.getName())),
+                () -> assertThat(petDto.getPhotoUrls()).containsExactly(
+                    "http://my.cdm.com/pet/12345/1",
+                    "http://my.cdm.com/pet/12345/2",
+                    "http://my.cdm.com/pet/12345/3"
                 )
-        );
+            ));
     }
 }
 ```
 
 **Note**: This test method can be simplified using a generated RestAssured client, as described in my [previous post][rest-assured-post].
 {: .notice}
+
+The `@AutoConfigureRestTestClient` creates a `RestTestClient` bean and binds in to the web application that listens on a random port.
+If using pre Spring Framework 7, you can inject a `TestRestTemplate`, it does not require autoconfiguration.
 
 The WireMock container is integrated via `@ImportTestcontainers(TestContainerConfiguration.class)`.
 This annotation allows Spring Boot to hook the container configurations into the test `ApplicationContext`.
@@ -466,12 +464,13 @@ Using `@ImportTestcontainers` allows us to store container configurations in a c
 Both the container and the DynamicPropertyRegistry could be defined in the test class itself.
 {: .notice}
 
-Both `@Container` and `@Testcontainers` are [JUnit5 Extension][junit-testcontainers] annotations that embed the container lifecycle into the test engine lifecycle. 
-The `wiremockServer` field is static, because the container in intended to be reused across test executions, thus set up before the first test and teared down after the last test of the class. he `withMappingFromResource` method configures the mock server mappings, pointing to a stub mapping in `src/integrationTest/resources/PetApiTest/wiremock-config.json`.
-See its contents below.
+The [`@DynamicPropertySource`][dynamic-property-source] is part of Spring’s Test Context Framework, allowing dynamic property injection into the `Environment`.
+Here, we use it to configure our `PetWarehouseApiClient` to point to the WireMock server URL.
 
-The [`@DynamicPropertySource`][dynamic-property-source] is part of Spring’s Test Context Framework, allowing dynamic property injection into the `Environment`. 
-Here, we use it to configure the host of `PetWarehouseApiClient` with the WireMock server URL.
+Both `@Container` and `@Testcontainers` are [JUnit5 Extension][junit-testcontainers] annotations that embed the container lifecycle into the test engine lifecycle. 
+The `wiremockServer` field is static, because the container in intended to be reused across test executions, thus set up before the first test and teared down after the last test of the class. 
+The `withMappingFromResource` method configures the mock server mappings, pointing to a stub in `src/integrationTest/resources/PetApiTest/wiremock-config.json`.
+See its contents below.
 
 ```json
 {
