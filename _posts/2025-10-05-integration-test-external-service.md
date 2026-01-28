@@ -538,7 +538,7 @@ The full example is available on my [GitHub][git-hub-example].
 [wire-mock]: https://wiremock.org
 [wire-mock-spring-boot]: https://wiremock.org/docs/spring-boot/
 [spring-test-containers]: https://docs.spring.io/spring-boot/reference/testing/testcontainers.html
-[git-hub-example]: https://github.com/K987/spring-boot-integration-tests/tree/master/integration-test-external-service
+[git-hub-example]: https://github.com/K987/spring-boot-integration-tests/releases/tag/external-service-test
 [dont-mock]: https://davesquared.net/2011/04/dont-mock-types-you-dont-own.html
 [junit-testcontainers]: https://testcontainers.com/guides/testcontainers-container-lifecycle/#_using_junit_5_extension_annotations
 [dynamic-property-source]: https://docs.spring.io/spring-framework/reference/testing/annotations/integration-spring/annotation-dynamicpropertysource.html
