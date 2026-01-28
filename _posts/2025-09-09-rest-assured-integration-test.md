@@ -2,7 +2,12 @@
 title: Testing Spring REST Webservices
 excerpt: Learn how to effectively test Spring REST APIs using RestAssured, OpenAPI, and Spring Boot, with a focus on integration and end-to-end testing.
 classes: wide
+last_modified_at: 2026-02-05T10:00:00-05:00
 ---
+
+The article has been updated to reflect changes in Spring Boot 4 and RestAssured 6.x on __2026.02.05__.
+You may find additional notes at the end of the article.
+{: .notice--warning}
 
 # Overview
 
@@ -42,17 +47,18 @@ MockMvc is suitable for testing MVC applications, but for REST APIs it is not th
 It supports `XPath` and `JsonPath` validations, but they are not so convenient.
 * **[WebTestClient][web-test-client]** is the next level web testing API of the Spring framework. It can be used as an HTTP client testing web applications and, just like `MockMvc`, to perform server-side tests with mocked servlet environments. 
 Besides JSON and XML validation capabilities it also supports request serialization and response deserialization.
-* **[TestRestTemplate][test-rest-template]**: is a simple test HTTP client utility class of Spring Boot. It acts exactly the same way as a `RestTemplate`, but does not throw exceptions on 4xx and 5xx responses.
+* **[TestRestTemplate][test-rest-template]**: is a simple test REST client utility class of Spring Boot. It acts exactly the same way as a `RestTemplate`, but does not throw exceptions on 4xx and 5xx responses. As `RestTemplate` is deprecated in favor of `RestClient`, `TestRestTemplate` is also deemed deprecated in favor of `TestRestClient`.
 * **[RestAssured][rest-assured]**: is a standalone library specifically for REST API testing. It offers [integration][rest-assured-spring] with the Spring framework to enable standalone unit testing of individual controllers.
 It comes with an extensive test feature set: configurable serialization, schema support, authentication support, CSRF support, SSL support.
+* **[RestTestClient][rest-test-client]**: introduced in Spring Framework 7.0, based on the `RestClient` interface. Fluent style, lightweight alternative of `MockMvc`, `WebTestClient` and `TestRestTemplate` for testing RESTful web services. Supports AssertJ.
 * **[MockWebServiceClient][mock-web-service-client]**: is a mock SOAP service client. It mocks the servlet container similarly to `MockMvc`.
 
-Depending on the use case we should likely choose between `RestAssured` or `WebTestClient`.
-`WebTestClient` supports async APIs and streaming responses, `RESTAssured` does not. 
-On contrary `RestAssured` offers advanced support for both request creation and response validation.
+We should prefer either `RestAssured` or `RestTestClient` to test synchronous REST API.
+While `RestTestClient` is native to Spring and well integrated with `AssertJ`, `RestAssured` is more feature rich in many aspects and has better support for OpenAPI generated clients.
+If we had to test asynchronous REST APIs, then `WebTestClient` or `RestAssured` would be the best choices.
 
 **For this example**, we’ll use **RestAssured** to test a traditional REST API in an end-to-end (e2e) style. 
-RestAssured is chosen for its rich feature set for request creation and response validation, though it does not support async APIs or streaming responses.
+The main reason to this choice is that RestAssured clients can be easily generated from OpenAPI specifications using the OpenAPI Generator tool.
 
 # Project Setup
 
@@ -152,13 +158,13 @@ subprojects {
 }
 ```
 
-Note: Avoid using org.springframework.boot:spring-boot-starter-test as a unit test dependency. Unit tests should focus on business logic in POJOs, not framework dependencies.
+Note: Avoid using org.springframework.boot:spring-boot-starter-aspectj-test as a unit test dependency. Unit tests should focus on business logic in POJOs, not framework dependencies.
 
 For the sake of simplicity the database layer is an H2 instance.
 
 # Test Configuration
 
-## Where to Put Which Test?
+## Where to Place Which Test?
 
 * Web module: Integration tests targeting the web layer. These are grey-box tests and do not require a fully configured application context.
 * Top-level module: Black-box tests exercising the whole application context. Test classes here should not reference other modules to avoid abstraction leaks.
@@ -175,8 +181,11 @@ The `org.openapi.generator` Gradle plugin is also used to generate a strongly ty
 // application/build.gradle
 
 dependencies {
-	integrationTestImplementation 'org.springframework.boot:spring-boot-starter-json'
-	integrationTestImplementation 'io.rest-assured:rest-assured'
+	integrationTestImplementation 'com.fasterxml.jackson.core:jackson-annotations'
+	integrationTestImplementation 'com.fasterxml.jackson.core:jackson-databind'
+	integrationTestImplementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+	// RestAssured 5.x is incompatible with Groovy 5.x used by Spring Boot 4.x
+	integrationTestImplementation 'io.rest-assured:rest-assured:6.0.0'
 }
 
 openApiGenerate {
@@ -338,6 +347,19 @@ For code-first projects, you can still generate test clients by first generating
 
 The full example is available on my [GitHub][git-hub-example].
 
+## Notes on Spring Boot 4 upgrade
+
+As the inline comment `application/build.gradle` points out we need to use RestAssured 6.x. Using an older version with Spring Boot 4.x will eventually lead to cryptic NPE errors due to Groovy version incompatibility.
+Spring Boot 4.x upgrades to Groovy 5.x, RestAssured is only compatible with Groovy 4.x up to version 5.x.
+
+**Why this poses a risk?**
+
+We are generating our client API with OpenAPI Generator, in the supported [library definitions][open-api] we can find the dependency versions required by the generated code. In fact those can be also found in build configuration of the client: `application/build/generate-resources/main/build.gradle`
+It is 5.5.6 for RestAssured, hence we are using a potentially incompatible version. 
+Nevertheless, the generated classes does not miss a dependency declaration for RestAssured, so it may be safe to override in our build configuration.
+
+Happy testing!
+
 [mock-mvc]: https://docs.spring.io/spring-framework/reference/testing/mockmvc.html
 [web-test-client]: https://docs.spring.io/spring-framework/reference/testing/webtestclient.html
 [test-rest-template]: https://docs.spring.io/spring-boot/reference/testing/test-utilities.html#testing.utilities.test-rest-template
@@ -346,3 +368,5 @@ The full example is available on my [GitHub][git-hub-example].
 [mock-web-service-client]: https://docs.spring.io/spring-ws/docs/current/reference/html/#_ii_reference
 [swagger-petstore]: https://petstore3.swagger.io
 [git-hub-example]: https://github.com/K987/spring-boot-integration-tests/tree/master/system-test-restassured
+[rest-test-client]: https://docs.spring.io/spring-framework/reference/testing/resttestclient.html
+[open-api]: https://openapi-generator.tech/docs/generators/java
