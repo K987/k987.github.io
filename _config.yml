@@ -53,6 +53,7 @@ subtitle: "Going a bit further than 101 tutorials."
 author_name: "Kálmán Kostenszky"
 github_username: K987
 repository: K987/k987.github.io
+email: "k987blog@gmail.com"
 
 #pagination
 paginate: 5 # amount of posts to show
@@ -65,6 +66,7 @@ author:
   name   : "Kálmán Kostenszky"
   avatar : "/assets/images/me.jpg"
   bio    : "I am a software engineer how likes to think twice before coding once."
+  email  : "k987blog@gmail.com"
   links:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
