@@ -1,8 +1,5 @@
 source "https://rubygems.org"
 
-gem "github-pages", group: :jekyll_plugins
-
-
 # Windows and JRuby does not include zoneinfo files, so bundle the tzinfo-data gem
 # and associated library.
 platforms :windows, :jruby do
@@ -19,12 +16,13 @@ gem "http_parser.rb", "~> 0.6.0", :platforms => [:jruby]
 
 # If you have any plugins, put them here!
 group :jekyll_plugins do
+  gem "github-pages"
   gem "jekyll-paginate"
   gem "jekyll-sitemap"
-  gem "jekyll-gist"
   gem "jekyll-feed"
   gem "jemoji"
   gem "jekyll-include-cache"
   gem "jekyll-algolia"
   gem "jekyll-seo-tag"
+  gem "jekyll-target-blank"
 end
