@@ -4,7 +4,7 @@ excerpt: Learn how to test and configure Spring Boot integration tests with exte
 last_modified_at: 2026-01-30T10:00:00-05:00
 ---
 
-The article has been updated to reflect changes in Spring Boot 4 on __2026.02.05__.
+The article has been updated to reflect changes in Spring Boot 4 on __2026.01.30__.
 {: .notice--warning}
 
 # Overview

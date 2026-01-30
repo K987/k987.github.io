@@ -4,7 +4,7 @@ excerpt: Learn how to effectively test Spring REST APIs using RestAssured, OpenA
 last_modified_at: 2026-01-30T10:00:00-05:00
 ---
 
-The article has been updated to reflect changes in Spring Boot 4 and RestAssured 6.x on __2026.02.05__.
+The article has been updated to reflect changes in Spring Boot 4 and RestAssured 6.x on __2026.01.30__.
 You may find additional notes at the end of the article.
 {: .notice--warning}
 
