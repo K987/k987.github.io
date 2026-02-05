@@ -2,6 +2,7 @@
 title: Testing Spring REST Webservices
 excerpt: Learn how to effectively test Spring REST APIs using RestAssured, OpenAPI, and Spring Boot, with a focus on integration and end-to-end testing.
 last_modified_at: 2026-01-30T10:00:00-05:00
+tags: [spring, testing, rest-assured, openapi]
 ---
 
 The article has been updated to reflect changes in Spring Boot 4 and RestAssured 6.x on __2026.01.30__.

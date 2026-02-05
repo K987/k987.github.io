@@ -2,6 +2,7 @@
 title: Spring Boot REST Client Integration Testing - part I
 excerpt: Learn how to test and configure Spring Boot integration tests with external webservice dependencies
 last_modified_at: 2026-01-30T10:00:00-05:00
+tags: [spring, testing, integration testing, rest client, testcontainers, wiremock]
 ---
 
 The article has been updated to reflect changes in Spring Boot 4 on __2026.01.30__.

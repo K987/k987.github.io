@@ -1,9 +1,7 @@
 ---
-
 title: "Spring Boot REST Client Integration Testing - part II: Client authorization"
 excerpt: How to design integration tests with client authorization in play.
-classes: wide
-
+tags: [integration testing, spring boot, rest client, oauth2, testcontainers, keycloak]
 ---
 
 # Overview

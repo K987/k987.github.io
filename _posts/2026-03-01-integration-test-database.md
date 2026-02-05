@@ -1,11 +1,11 @@
 ---
-title: Integration testing with databases
+title: "Integration testing with databases - part I: Overview of tools"
 excerpt: In this miniseries, I want to cover several aspects of integration testing with the Spring framework, focusing on databases. This first part provides an overview of the tools available for test data management and database provisioning.
 toc: true
+tags: [integration testing, spring, databases, test data management, testing tools]
 ---
 
 # Overview
-
 In this miniseries, I want to cover several aspects of integration testing with the Spring framework.
 
 I'll begin with an overview of the tools provided by the framework and third-party integrations.
@@ -28,7 +28,6 @@ By "test data management," I mean the process of creating and making the test da
 To begin, let's see the tools offered.
 
 # Tools for Test Data Management
-
 The technology selection of the production code influences the tools we can use for testing. 
 Sometimes, incompatibility between these tools is clear; other times, a combination is just extremely inconvenient to use. 
 Try to use a limited set of tools compatible with the level of data access abstraction in your production code.
@@ -36,7 +35,6 @@ Carefully evaluate the trade-offs of your selection.
 Arbitrarily introducing a tool that fits a momentary use case best will eventually complicate your test infrastructure.
 
 ## Generating Test Data
-
 Beyond the simplest schemas, generating and maintaining test data manually is a tedious and error-prone task. 
 In the age of AI tools, this should not be a problem anymore; unless we don't intend to share the details of our database schema with a third-party service. 
 Beyond AI, there are plenty of online test data generators, some even open-source.
@@ -61,7 +59,6 @@ The feature that makes it most appealing for database test data generation is th
 It can also generate Java objects.
 
 ## Loading Test Data
-
 Part of the test fixture is loading the test data into the database before test execution. 
 We may need to load a chunk of data for a single test or a shared dataset for multiple tests.
 If you seek a tool to initialize the database schema and seed data for the entire test suite, please check the _Initializing database_ section below.
@@ -112,7 +109,6 @@ By using the `@FlywayTest` annotation, you can not only declaratively execute SQ
 However, this approach may be too heavy-weight for many use cases.
 
 ## Initializing the Database
-
 Initialization can include two steps: creating the database schema and populating initial data.
 
 Test data initialization can be split into two parts as well:
@@ -147,17 +143,14 @@ Even if migrations run as a separate process in production (for example, to avoi
 For that, just add them as test dependencies and point them to the migration scripts folder.
 
 # Verification
-
 For the sake of completeness, I mention `JdbcTestUtils`[jdbc-test-utils] here, which provides some utility methods to verify the state of the database, such as counting rows matching a criterion in a table or deleting from a table. 
 To use it, you must pass a `JdbcClient` instance, which can be created from a `DataSource`. `JdbcTemplate` and `JdbcClient` beans are automatically created when using Spring Boot.
 
 # Databases
-
 We generally have two options for the database in integration tests: either use an in-memory database or a standalone RDBMS instance. 
 Spring and Spring Boot provide support for the first option out of the box; the second option usually requires some additional setup.
 
 ## Embedded Databases
-
 An embedded database is a lightweight, usually in-memory database that runs within the same process as the application. 
 These qualities make them ideal for integration testing, as they are fast to start up and tear down, superfast, and do not require any external dependencies.
 
@@ -172,7 +165,6 @@ If Spring Boot is not used, or a custom DataSource of an embedded database is ne
 You can further customize them via `EmbeddedDatabaseConfigurer` instances.
 
 ## Standalone Databases
-
 When using a standalone RDBMS instance for integration tests, you must ensure that the database is available when the tests run. This can be achieved in several ways:
 * A dedicated test database server is set up and running all the time.
 * A test database server is started and stopped as part of the build process.
@@ -188,7 +180,6 @@ The third option is often implemented using containerization technologies like D
 Unsurprisingly, [Testcontainers][testcontainers] is a popular choice for this use case as well. It supports a [wide range of RDBMSs][testcontainers-db-modules] and provides a convenient API to manage the lifecycle of the containers.
 
 ## Zonky.io
-
 It is absolutely imperative to mention the [Zonky.io][zonky] project when discussing databases for integration tests. 
 Under the hood, it relies on Testcontainers (unless another provider is chosen), but it provides a higher-level abstraction specifically designed for database testing. 
 What it brings to the table is automatic management of database instances, caching, and resetting. 
@@ -197,7 +188,6 @@ The biggest selling point is that it does not create a new database instance for
 Its prefetching and caching mechanism significantly speed up test execution compared to starting a new container each time.
 
 # Conclusion
-
 In conclusion, effective integration testing with databases in Spring requires thoughtful selection and configuration of tools for test data management and database provisioning. 
 By leveraging the right combination of SQL scripts, ORM utilities, and database management solutions like Flyway or Zonky.io, you can ensure your tests are reliable, maintainable, and closely aligned with production environments.
 
