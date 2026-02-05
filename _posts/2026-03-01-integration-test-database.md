@@ -100,8 +100,9 @@ In the next article, I'll go deeper into the pros and cons of these approaches.
 When using an ORM solution, such as JPA/Hibernate or Spring Data, we can leverage the entity model to set up test data programmatically.
 
 If you are using JPA from the `spring-boot-data-jpa` module, you can make use of [`TestEntityManager`][test-entity-manager], a tiny wrapper around `EntityManager` specifically designed for tests. 
-Its `persistFlushFind` and `persistAndFlush` methods are very useful to set up test data in a way that respects the entity mappings and relationships. 
-This is helpful when ensuring that entity data is actually written and read from the underlying database correctly.
+Its `persistFlushFind` and `persistAndFlush` methods are very useful to correctly set up test data. 
+The flush initiates the execution of SQL statements against the database, ensuring that constraints are checked and synthetic keys are generated. 
+It will also trigger the execution of entity lifecycle callbacks.
 
 As stated above, combining ORM with SQL scripts is a valid approach.
 
