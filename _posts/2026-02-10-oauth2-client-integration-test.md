@@ -110,7 +110,7 @@ If we run the sliced integration test `PetWarehouseApiClientTest` now, we see th
 
 _How so?_ According to the documentation, it should be created by the framework.
 
-The problem is that we have a sliced integration test, which only loads part of the application context—enough to bootstrap the `RestClient`, but not Spring Security.
+The problem is that we have a sliced integration test, which only loads part of the application context - enough to bootstrap the `RestClient`, but not Spring Security.
 
 If we insist on the configuration above, we have three options. I'll break them down:
 
@@ -118,7 +118,7 @@ If we insist on the configuration above, we have three options. I'll break them 
 Find the right autoconfiguration class and import it manually via [`@ImportAutoConfiguration`][import-auto-configuration].
 One may find these classes in the appendix of the [documentation][spring-boot-auto-configuration].
 The problem with this approach is that it is often a slippery slope, as it will try to pull in additional dependencies, which in turn bring further autoconfiguration needs.
-Understanding the autoconfiguration mechanism and its dependencies requires knowledge of the intricate internal details of the framework—not something we want to be bothered with for test fixtures.
+Understanding the autoconfiguration mechanism and its dependencies requires knowledge of the intricate internal details of the framework - not something we want to be bothered with for test fixtures.
 
 Most importantly, these additional auto-configurations break the core idea of sliced integration tests, which is to keep the test context as small as possible.
 I'd argue that their combination is a code smell indicating bad cohesion.
@@ -162,7 +162,7 @@ In this specific use case, we have two options:
 1. Inject an OAuth2-customized RestClient builder when needed; otherwise, use a plain one. As you may see, `RestClient.Builder` is just a bean like any other, so if we define our own, or use a [customizer][rest-client-customizer], we can make the customized version injected.
    This is very convenient when all our client instances require the same configuration; otherwise, we would need to maintain multiple builder beans.
    This approach is not only valid for this case.
-   We can override most of the default bean definitions when needed—it's even better if there are customizer interfaces available to alter the default behavior of the framework.
+   We can override most of the default bean definitions when needed - it's even better if there are customizer interfaces available to alter the default behavior of the framework.
 2. Use [conditional bean registration][conditional-bean-registration] to choose configuration on the fly.
    As the document points out, the most common example is using configuration profiles with the `@Profile` annotation, yet there exist several conditional variants in [Spring Boot][conditional-variants].
 
@@ -322,7 +322,7 @@ Then we can add the verification logic to the test method:
 
 # Conclusion
 
-In this post, we have seen how cross-cutting concerns—in this particular case, authorization with OAuth2—can affect integration testing.
+In this post, we have seen how cross-cutting concerns - in this particular case, authorization with OAuth2 - can affect integration testing.
 We have explored that, despite several workarounds, the most sustainable solution is to design the whole application with testability in mind.
 
 In this specific case, we used conditional bean registration to separate the OAuth2-capable `RestClient` configuration from the plain one.
