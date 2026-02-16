@@ -14,23 +14,24 @@ We’ll also tackle architectural design considerations, a common bottleneck, as
 You’ll see that the real challenge isn’t OAuth’s complexity or authentication/authorization hurdles, but rather handling cross-cutting concerns in a clean, maintainable way.
 
 Designing for testability at the unit test level improves code quality and maintainability by promoting SOLID principles.
-The same holds true for integration tests, where testability keeps the architecture modular and loosely coupled.
+The same holds true for integration tests, where design for testability contributes to loosely coupled, highly cohesive modular application architecture.
 
-Unit tests rarely deal with cross-cutting concerns; if they do, it’s often a sign of poor design. But at the integration level, these concerns are unavoidable.
+Unit tests rarely deal with cross-cutting concerns; if they need to, it may be a sign of poor design. 
+But at the integration level, these concerns are unavoidable.
 We’ll explore how to address them effectively in test design.
 
-_Before continuing, ensure you’re familiar with the example application from the previous post._
+_Before continuing, ensure you’re familiar with the example application from the [previous post][integration-test-external]._
 
 # Adding OAuth2 client authorization
 
-In a real-world scenario, we need to handle authentication and authorization when interacting with downstream network services.
+In a real-world scenario, the need to secure communication with downstream services is common.
 In our example, we already have an API key in place.
 When it comes to authentication and authorization, the three major aspects to consider are:
 * _What is the authentication and authorization mechanism in place?_ It can be as simple as an API key, or Basic Auth, or more complex ones like SAML, OAuth2, OpenID Connect, mTLS, etc.
 * _Who is the subject of authentication and authorization?_ It can be the application itself or the end user on behalf of whom the application is acting, or a combination of both in case of multitenant applications.
 * _How are the credentials acquired?_ Are they static, like an API key or username and password, or dynamic, like token relay mechanisms? Are they acquired by the application itself, or provided by a third-party vault?
 
-The more complex the answers, the less advisable it is to tightly couple cross-cutting concerns like authentication and authorization to the business logic layer.
+The more complex the answers, the less advisable it is to tightly couple these concerns to the business logic layer.
 
 OAuth2 is a highly flexible standard that can be adapted to a wide variety of scenarios.
 In the end, the client's request just needs to pass a valid token in the right header and format, and does not need to know how to acquire it.
@@ -48,17 +49,19 @@ To inject a request interceptor that adds the authorization header, we need to c
 PetWarehouseRepository petApiRepository(
         RestClient.Builder builder,
         PetWarehouseApiClientConfigurationProperties properties,
+        // new dependencies
         OAuth2AuthorizedClientManager authorizedClientManager,
         OAuth2AuthorizedClientService authorizedClientService
 ) {
-
+    // Configure OAuth2 hooks
     OAuth2ClientHttpRequestInterceptor requestInterceptor =
             new OAuth2ClientHttpRequestInterceptor(authorizedClientManager);
 
     OAuth2AuthorizationFailureHandler authorizationFailureHandler =
             OAuth2ClientHttpRequestInterceptor.authorizationFailureHandler(authorizedClientService);
     requestInterceptor.setAuthorizationFailureHandler(authorizationFailureHandler);
-
+    
+    // Build the RestClient with the interceptor
     RestClient client = builder
             // ...
             .defaultRequest(req ->
@@ -72,7 +75,7 @@ PetWarehouseRepository petApiRepository(
 An `OAuth2AuthorizedClientManager` is injected through an interceptor into the `RestClient`; this manager is responsible for acquiring and managing the OAuth2 tokens.
 
 We also need to define the `clientRegistrationId` as a request attribute, so the framework knows which client registration to use when fetching the token.
-In the example, I use the `defaultRequest` to customize every request.
+In the example, I use the `defaultRequest` configurer to customize every request.
 
 {% capture notice-1 %}
 Alternatively, we could leverage the [HTTP Service Clients Integration][http-service-clients-integration].
@@ -84,7 +87,7 @@ This requires a new bean definition that will process the `@ClientRegistrationId
         return OAuth2RestClientHttpServiceGroupConfigurer.from(manager);
     }
 ```
-In the scope of this example, it is indifferent which one you choose, and your choice may depend on your specific use case.
+In the scope of this example, it is indifferent which one you choose, and your choice may depend on your specific needs.
 {% endcapture %}
 
 <div class="notice">
@@ -110,23 +113,24 @@ If we run the sliced integration test `PetWarehouseApiClientTest` now, we see th
 
 _How so?_ According to the documentation, it should be created by the framework.
 
-The problem is that we have a sliced integration test, which only loads part of the application context - enough to bootstrap the `RestClient`, but not Spring Security.
+The problem is that we have a sliced integration test, which only loads part of the application context, enough to bootstrap the `RestClient`, but not Spring Security.
 
-If we insist on the configuration above, we have three options. I'll break them down:
+If we insist on the configuration above, we have three options. Let's see them one by one:
 
 ## Adding autoconfiguration
-Find the right autoconfiguration class and import it manually via [`@ImportAutoConfiguration`][import-auto-configuration].
+Look up the right autoconfiguration class and import it manually via [`@ImportAutoConfiguration`][import-auto-configuration].
 One may find these classes in the appendix of the [documentation][spring-boot-auto-configuration].
 The problem with this approach is that it is often a slippery slope, as it will try to pull in additional dependencies, which in turn bring further autoconfiguration needs.
-Understanding the autoconfiguration mechanism and its dependencies requires knowledge of the intricate internal details of the framework - not something we want to be bothered with for test fixtures.
+Understanding the autoconfiguration mechanism and its dependencies requires knowledge of the intricate internal details of the framework.
+I'd want to be bothered with for test fixtures.
 
 Most importantly, these additional auto-configurations break the core idea of sliced integration tests, which is to keep the test context as small as possible.
-I'd argue that their combination is a code smell indicating bad cohesion.
+Combining sliced integration tests with auto-configuration is a bit of an anti-pattern, as it defeats the purpose of slicing the context in the first place.
 
 ## Configure the missing beans manually
-Define the missing beans manually in the test configuration.
-Depending on the complexity and how deeply nested they are, this may be completely impossible.
-Even if possible, it will lay a considerable maintenance burden on these tests and again requires delicate knowledge of the framework internals.
+Define the missing beans for yourself, manually in the test configuration.
+Depending on the complexity and how deeply nested they are, this may be easy or completely impossible.
+Even if possible, it will lay a considerable overhead by requiring the maintenance of framework-specific code in the test fixtures, which is not ideal.
 
 ## Mock the missing beans
 Mock the missing bean. In this case, this seems the most feasible approach, as we don't care about the actual OAuth2 logic in this test, just need to satisfy the dependencies.
@@ -140,7 +144,7 @@ Using the `@MockitoBean` annotation, we can easily mock the missing bean in the 
     @MockitoBean
     OAuth2AuthorizedClientService authorizedClientService;
 ```
-This seems to work, but it required some luck: we didn't have to define the behavior of these mocks, as the dependent code seems to handle no-op behavior.
+Try it... this seems to work, but it required some luck: we didn't have to define the behavior of these mocks, as the dependent code handle no-op behavior in this case.
 It was pure luck.
 
 Above all, remember: **you should not mock what you don't own.**
@@ -150,14 +154,14 @@ Above all, remember: **you should not mock what you don't own.**
 The approaches above are all workarounds to patch up the design of the application under test.
 All of them bring additional and superfluous complexity, hence code smell.
 Let's reconsider the design, bearing in mind that the application will be deployed in several test environments before reaching production.
-It is very likely that a full-grown authentication and authorization mechanism won't be in place in all of those environments, but only in late stages of integration.
+It is very likely that a full-grown authentication and authorization service won't be in place in all of those environments, but only in late stages of integration.
 Most of these environments won't even have real users, production-grade data, or public network access.
 So, building out and maintaining complex cross-cutting concerns will only burden the testability of business use cases.
 A better approach is to conditionally enable or disable such features based on the environment and the use case under test.
 
-_How is it possible in this case?_
+_How is it possible?_
 
-In this specific use case, we have two options:
+This is always a case by case answer. In this specific use case, we have two options:
 
 1. Inject an OAuth2-customized RestClient builder when needed; otherwise, use a plain one. As you may see, `RestClient.Builder` is just a bean like any other, so if we define our own, or use a [customizer][rest-client-customizer], we can make the customized version injected.
    This is very convenient when all our client instances require the same configuration; otherwise, we would need to maintain multiple builder beans.
@@ -195,8 +199,8 @@ class PetWarehouseApiClientConfiguration {
     // extracted shared code
 }
 ```
-It is assumed that if the client-id configuration property is defined, then this specific client must use authorization; otherwise, it does not.
-In such cases, where we have mutually exclusive variants of a bean definition, both bean definitions need to have a condition defined.
+It is assumed that if the `client-id` configuration property is defined, then this specific client must use authorization; otherwise, it does not.
+When we have mutually exclusive variants of a bean definition, both bean definition methods need to have a condition defined.
 
 We could have used the built-in `@ConditionalOnOAuth2ClientRegistrationProperties` condition as well, or other approaches.
 
@@ -210,7 +214,7 @@ On the other hand, with an explicit condition, we dedicate a config option, prol
 
 # Mocking OAuth2 Authorization Server
 
-If we run the integration test with the full application context configured, there might be a temptation to enable OAuth2 to test if everything is wired up correctly.
+If we run the integration test with the full application context configured, we might be tempted to enable OAuth2 to test if everything is wired up correctly.
 We need something to act as an OAuth2 Authorization Server in our test environment.
 
 In the [previous blog post][integration-test-external], I introduced Testcontainers to mock the downstream Pet API.
@@ -218,7 +222,7 @@ Looking at the available TestContainer modules, it is easy to find the [Keycloak
 It may be a bit of overkill for the use case at hand; however, for production-grade applications, it may be a viable option to have a real OAuth2 Authorization Server in place even in test environments.
 My setup is mostly based on the solution provided in [this article][keycloak-integration].
 
-First, we need to create the Keycloak realm and register the client application.
+First, we need to create the Keycloak realm definition file with the registered the client application.
 
 {% capture notice-2 %}
 The way the referenced article describes the realm export will not work, because the embedded h2 database allows only a single connection at a time.
@@ -243,8 +247,7 @@ Then, we configure our OAuth2 client in the configuration properties.
 demo:
   pet:
     client:
-      api-key: "dummy-key"
-      host: "http://dummy-url.org"
+      # ...
       client-id: "pet-api-client"
 
 spring:
@@ -255,7 +258,7 @@ spring:
           pet-api-client:
             provider: default
             client-id: pet-api-client
-            client-secret: # your client secret here
+            client-secret: # your client secret here from the realm configuration
             authorization-grant-type: client_credentials
 ```
 
@@ -266,11 +269,12 @@ public interface TestContainerConfiguration {
     @Container
     KeycloakContainer keyCloakContainer =
             new KeycloakContainer() //quay.io/keycloak/keycloak:25.0
+                    // pointing to the exported realm definition file, which includes the client registration
                     .withRealmImportFile("keycloak/realm.json");
 
     @DynamicPropertySource
     static void registerContainerProperties(DynamicPropertyRegistry registry) {
-        registerDatabaseHost(registry);
+        // register the various properties
         registerAuthServer(registry);
     }
     
