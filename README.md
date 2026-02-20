@@ -4,7 +4,7 @@ Local Development Setup for Jekyll with Minimal Mistakes Theme
 
 Launching local development server:
 ```bash
-bundle exec jekyll serve --livereload --future
+bundle exec jekyll serve --livereload --future --drafts
 ```
 
 Useful Links:
