@@ -207,6 +207,6 @@ In the next post, I'll dive deeper into common pitfalls and best practices for i
 [jdbc-test-utils]: https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/test/jdbc/JdbcTestUtils.html
 [spring-boot-embedded-db]: https://docs.spring.io/spring-boot/reference/data/sql.html#data.sql.datasource.embedded
 [spring-embedded-db]: https://docs.spring.io/spring-framework/reference/data-access/jdbc/embedded-database-support.html
-[testcontainers]https://testcontainers.com/guides/replace-h2-with-real-database-for-testing/
+[testcontainers]: https://testcontainers.com/guides/replace-h2-with-real-database-for-testing/
 [testcontainers-db-modules]: https://java.testcontainers.org/modules/databases/
 [zonky]: https://github.com/zonkyio/embedded-database-spring-test
