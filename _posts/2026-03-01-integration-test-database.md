@@ -47,13 +47,13 @@ I am sure we've all suffered the consequences of adding _just another column_ to
 With the tools below, we can not only automate test data generation, but also maintain changes from a single place.
 
 ### Instancio
-As it states itself, [Instancio][https://www.instancio.org] is primarily designed for unit tests where actual values are not that important. 
+As it states itself, [Instancio](https://www.instancio.org) is primarily designed for unit tests where actual values are not that important. 
 However, you may still find it useful to generate entity objects for populating test data in integration tests as well. 
 It is suitable for generating large numbers of complex objects with nested relationships, when the actual values are not that important. 
 You can still customize the generation process, and thus the values, via its fluent API. It can therefore be combined with other tools, like Datafaker, to generate realistic test entities.
 
 ### Datafaker
-[Datafaker][https://www.datafaker.net] is better suited for generating realistic test data for databases. 
+[Datafaker](https://www.datafaker.net) is better suited for generating realistic test data for databases. 
 At its core are providers, which can generate fake data for various domains, such as names, addresses, companies, products, etc.
 The feature that makes it most appealing for database test data generation is the ability to export generated data in SQL format, via its so-called transformers. 
 It can also generate Java objects.
