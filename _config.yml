@@ -65,7 +65,7 @@ search: true
 author:
   name   : "Kálmán Kostenszky"
   avatar : "/assets/images/me.jpg"
-  bio    : "I am a software engineer how likes to think twice before coding once."
+  bio    : "Softrware Engineer from the engine room"
   email  : "k987blog@gmail.com"
   links:
     - label: "GitHub"
